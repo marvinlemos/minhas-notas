@@ -4,7 +4,6 @@ import { Upload, AlertCircle, Menu } from 'lucide-react';
 
 import Sidebar from './components/Sidebar';
 import ControlBar from './components/ControlBar';
-import AssistantModal from './components/AssistantModal';
 import EditToolbar from './components/EditToolbar';
 import DrawingCanvas from './components/DrawingCanvas';
 import { ScrollSettings, PDFFile, AppMode, DrawingPath, PenSettings, EraserSettings, DrawingTool } from './types';
@@ -25,7 +24,6 @@ function App() {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [scale, setScale] = useState(1.2);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showAssistant, setShowAssistant] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   
@@ -177,7 +175,6 @@ function App() {
       <Sidebar 
         activeFile={file?.name || null} 
         onFileSelect={onFileChange}
-        onOpenAssistant={() => setShowAssistant(true)}
       />
 
       <main className="flex-1 flex flex-col h-full relative">
@@ -302,8 +299,6 @@ function App() {
             />
         )}
       </main>
-
-      <AssistantModal isOpen={showAssistant} onClose={() => setShowAssistant(false)} />
     </div>
   );
 }

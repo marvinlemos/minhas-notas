@@ -1,13 +1,12 @@
 import React from 'react';
-import { BookOpen, FileText, Clock, Star, Settings, BrainCircuit } from 'lucide-react';
+import { BookOpen, FileText, Clock, Star, Settings } from 'lucide-react';
 
 interface SidebarProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   activeFile: string | null;
-  onOpenAssistant: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onFileSelect, activeFile, onOpenAssistant }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onFileSelect, activeFile }) => {
   return (
     <div className="w-20 md:w-64 bg-note-sidebar border-r border-gray-200 h-full flex flex-col justify-between hidden sm:flex">
       <div>
@@ -39,18 +38,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onFileSelect, activeFile, onOpenAssis
       </div>
 
       <div className="p-4 space-y-3">
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hidden md:block">
-            <h3 className="text-sm font-semibold text-blue-900 mb-1">IA Assistant</h3>
-            <p className="text-xs text-blue-700 mb-3">Tire dúvidas sobre seus estudos.</p>
-            <button 
-                onClick={onOpenAssistant}
-                className="w-full py-2 bg-white text-blue-600 text-xs font-bold rounded-lg shadow-sm border border-blue-100 hover:bg-blue-50 flex items-center justify-center gap-2"
-            >
-                <BrainCircuit className="w-3 h-3" />
-                Abrir Chat
-            </button>
-        </div>
-
         <label className="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 cursor-pointer transition-all active:scale-95 justify-center md:justify-start">
             <input 
                 type="file" 
