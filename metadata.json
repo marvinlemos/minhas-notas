@@ -1,0 +1,5 @@
+{
+  "name": "NoteFlow PDF",
+  "description": "Um leitor de PDF estilo 'Notes' com funcionalidade de teleprompter (scroll automático) para leitura focada, otimizado para tablets.",
+  "requestFramePermissions": []
+}
