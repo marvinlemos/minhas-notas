@@ -47,9 +47,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       clientY = (e as React.MouseEvent).clientY;
     }
 
+    // Normalize coordinates (0 to 1) based on the ACTUAL rendered size of the element
+    // This fixes the offset issue if the rendered PDF size differs slightly from the calculated 'width' prop
     return {
-      x: (clientX - rect.left) / width,
-      y: (clientY - rect.top) / height
+      x: (clientX - rect.left) / rect.width,
+      y: (clientY - rect.top) / rect.height
     };
   };
 
@@ -77,8 +79,6 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         clientY = (e as React.MouseEvent).clientY;
     }
 
-    // Relative to the container/page is fine for fixed positioning, 
-    // but here we render the cursor inside the relative container of the canvas
     setCursorPos({
         x: clientX - rect.left,
         y: clientY - rect.top
@@ -100,6 +100,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     updateCursor(e);
     if (!isDrawing) return;
     
+    // Prevent scrolling while drawing on touch devices
+    if ('touches' in e) {
+      // e.preventDefault() is passive by default in React 18+, handled by CSS touch-action: none
+    }
+
     const coords = getCoords(e);
     if (coords) {
       setCurrentPoints(prev => [...prev, coords]);
@@ -136,13 +141,14 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
     // Handle high DPI displays
     const dpr = window.devicePixelRatio || 1;
+    // Set internal resolution matches the prop (logical resolution) * pixel ratio
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
     
-    // Style logic for CSS size
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    // Style logic for CSS size - ensure it matches the container
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -158,6 +164,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         
+        // Map normalized coordinates (0..1) back to internal canvas resolution (width/height)
         ctx.moveTo(points[0].x * width, points[0].y * height);
         for (let i = 1; i < points.length; i++) {
           ctx.lineTo(points[i].x * width, points[i].y * height);
@@ -181,10 +188,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   }, [width, height, paths, isDrawing, currentPoints, currentColor, currentWidth, activeTool]);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full">
+    <div ref={containerRef} className="absolute inset-0 w-full h-full touch-none">
         <canvas
             ref={canvasRef}
-            className={`absolute inset-0 z-10 ${isActive ? (activeTool === DrawingTool.ERASER ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'} touch-none`}
+            className={`absolute inset-0 z-10 w-full h-full ${isActive ? (activeTool === DrawingTool.ERASER ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'}`}
             onMouseDown={startDrawing}
             onMouseMove={draw}
             onMouseUp={endDrawing}

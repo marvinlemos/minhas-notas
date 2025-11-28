@@ -9,14 +9,15 @@ import EditToolbar from './components/EditToolbar';
 import DrawingCanvas from './components/DrawingCanvas';
 import { ScrollSettings, PDFFile, AppMode, DrawingPath, PenSettings, EraserSettings, DrawingTool } from './types';
 import { saveNote, loadNote } from './services/storageService';
+import { exportPDF } from './services/pdfExportService';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs`;
+// Configure PDF.js worker - MATCHING VERSION 4.8.69
+pdfjs.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs`;
 
 const pdfOptions = {
-  cMapUrl: 'https://unpkg.com/pdfjs-dist@4.8.69/cmaps/',
+  cMapUrl: 'https://aistudiocdn.com/pdfjs-dist@4.8.69/cmaps/',
   cMapPacked: true,
-  standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@4.8.69/standard_fonts/',
+  standardFontDataUrl: 'https://aistudiocdn.com/pdfjs-dist@4.8.69/standard_fonts/',
 };
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Mode & Drawing State
   const [appMode, setAppMode] = useState<AppMode>(AppMode.VIEW);
@@ -76,6 +78,17 @@ function App() {
   const handleSave = () => {
     if (file) {
         saveNote(file, annotations);
+    }
+  };
+
+  const handleExport = async () => {
+    if (file && !isExporting) {
+        setIsExporting(true);
+        // Wait a small tick to allow UI to update to loading state
+        setTimeout(async () => {
+            await exportPDF(file, annotations);
+            setIsExporting(false);
+        }, 100);
     }
   };
 
@@ -182,6 +195,8 @@ function App() {
             eraserSettings={eraserSettings}
             onEraserSettingsChange={setEraserSettings}
             onSave={handleSave}
+            onExport={handleExport}
+            isExporting={isExporting}
           />
         ) : (
           <div className="md:hidden h-14 bg-white border-b flex items-center px-4 justify-between z-10 shrink-0">
@@ -248,9 +263,10 @@ function App() {
                                   pageNumber={pageKey} 
                                   scale={scale}
                                   className="bg-white"
-                                  renderTextLayer={appMode === AppMode.VIEW} // Optimization: disable text selection in edit mode
+                                  renderTextLayer={false} // CRITICAL FIX: Disabled text layer to prevent rendering glitches
                                   renderAnnotationLayer={false}
                                   width={width}
+                                  devicePixelRatio={Math.min(window.devicePixelRatio, 2)}
                                   onLoadSuccess={() => { /* Could capture dimensions here if needed */ }}
                               />
                               {/* Overlay Canvas */}
